@@ -37,16 +37,22 @@ async function run() {
       .db("bistro-boss-restaurant")
       .collection("carts");
 
+    /* ----------------------------------------------------------
+      !-------------------------- GET ALL MENUS ------------------- */
     app.get("/menu", async (req, res) => {
       const menu = await menuCollection.find().toArray();
       res.send(menu);
     });
 
+    /* ----------------------------------------------------------
+      !-------------------------- GET ALL REVIEWS ------------------- */
     app.get("/reviews", async (req, res) => {
       const reviews = await reviewCollection.find().toArray();
       res.send(reviews);
     });
 
+    /* ----------------------------------------------------------
+      !-------------------------- SAVE TO CART ------------------- */
     app.post("/carts", async (req, res) => {
       const cartItem = req.body;
       const query = { foodID: cartItem.foodID, email: cartItem.email };
@@ -65,6 +71,18 @@ async function run() {
         const result = await cartCollection.insertOne(cartItem);
         res.send(result);
       }
+    });
+
+    /* --------------------------------------------------------------
+    !---------------------- GET CARTS OF AN USER ------------------- */
+    app.get("/carts", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
