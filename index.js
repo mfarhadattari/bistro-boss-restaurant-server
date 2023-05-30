@@ -28,10 +28,14 @@ async function run() {
 
     /* ----------------------- COLLECTION -------------------- */
     const menuCollection = client
-      .db("bistro-boss-restaurant").collection("foodsMenu");
-    const reviewsCollection = client
+      .db("bistro-boss-restaurant")
+      .collection("foodsMenu");
+    const reviewCollection = client
       .db("bistro-boss-restaurant")
       .collection("reviews");
+    const cartCollection = client
+      .db("bistro-boss-restaurant")
+      .collection("carts");
 
     app.get("/menu", async (req, res) => {
       const menu = await menuCollection.find().toArray();
@@ -39,8 +43,28 @@ async function run() {
     });
 
     app.get("/reviews", async (req, res) => {
-      const reviews = await reviewsCollection.find().toArray();
+      const reviews = await reviewCollection.find().toArray();
       res.send(reviews);
+    });
+
+    app.post("/carts", async (req, res) => {
+      const cartItem = req.body;
+      const query = { foodID: cartItem.foodID, email: cartItem.email };
+      const find = await cartCollection.findOne(query);
+      if (find) {
+        const previousQuantity = find.quantity;
+        const updateDoc = {
+          $set: {
+            quantity: previousQuantity + 1,
+          },
+        };
+        const result = await cartCollection.updateOne(find, updateDoc);
+        res.send(result);
+      } else {
+        cartItem.quantity = 1;
+        const result = await cartCollection.insertOne(cartItem);
+        res.send(result);
+      }
     });
 
     // Send a ping to confirm a successful connection
