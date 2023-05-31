@@ -36,6 +36,9 @@ async function run() {
     const cartCollection = client
       .db("bistro-boss-restaurant")
       .collection("carts");
+    const userCollection = client
+      .db("bistro-boss-restaurant")
+      .collection("users");
 
     /* ----------------------------------------------------------
       !-------------------------- GET ALL MENUS ------------------- */
@@ -92,6 +95,21 @@ async function run() {
       const query = { email: email };
       const result = await cartCollection.find(query).toArray();
       res.send(result);
+    });
+
+    /* ------------------------------------------------------------------
+    !------------------------- CREATE USER --------------------------- */
+    app.post("/users", async (req, res) => {
+      const userInfo = req.body;
+      const query = { email: userInfo.email };
+      const alreadyExist = await userCollection.findOne(query);
+      if (!alreadyExist) {
+        const result = await userCollection.insertOne(userInfo);
+        res.send(result);
+      } else {
+        const result = { alreadyExist: true };
+        res.send(result);
+      }
     });
 
     // Send a ping to confirm a successful connection
