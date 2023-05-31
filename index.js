@@ -28,7 +28,7 @@ const jwtVerify = (req, res, next) => {
 
   jwt.verify(token, process.env.TOKEN_SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res.send(err);
+      return res.send({ error: true, ...err });
     }
     req.decoded = decoded;
     next();
@@ -124,10 +124,14 @@ async function run() {
 
     /* --------------------------------------------------------------
     !---------------------- GET CARTS OF AN USER ------------------- */
-    app.get("/carts", async (req, res) => {
+    app.get("/carts", jwtVerify, async (req, res) => {
       const email = req.query.email;
       if (!email) {
         res.send([]);
+      }
+      const decoded = req.decoded;
+      if (!email === decoded.email) {
+        res.status(403).send({ error: true, message: "Forbidden Access" });
       }
       const query = { email: email };
       const result = await cartCollection.find(query).toArray();
