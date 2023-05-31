@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
@@ -39,6 +40,17 @@ async function run() {
     const userCollection = client
       .db("bistro-boss-restaurant")
       .collection("users");
+
+    /* ---------------------------------------------------------------
+      !------------------- GENERATE TOKEN ---------------------------- */
+    app.post("/jwt", (req, res) => {
+      const data = req.body;
+      const token = jwt.sign(data, process.env.TOKEN_SECRET_KEY, {
+        expiresIn: "1h",
+        algorithm: "HS512",
+      });
+      res.send({ token });
+    });
 
     /* ----------------------------------------------------------
       !-------------------------- GET ALL MENUS ------------------- */
@@ -101,14 +113,30 @@ async function run() {
     !------------------------- CREATE USER --------------------------- */
     app.post("/users", async (req, res) => {
       const userInfo = req.body;
-      const query = { email: userInfo.email };
-      const alreadyExist = await userCollection.findOne(query);
-      if (!alreadyExist) {
-        const result = await userCollection.insertOne(userInfo);
-        res.send(result);
-      } else {
-        const result = { alreadyExist: true };
-        res.send(result);
+      if (userInfo.email && userInfo.displayName) {
+        const query = { email: userInfo.email };
+        const alreadyExist = await userCollection.findOne(query);
+        if (!alreadyExist) {
+          const result = await userCollection.insertOne(userInfo);
+          res.send(result);
+        } else {
+          const isSameName = alreadyExist.displayName === userInfo.displayName;
+          if (isSameName) {
+            const result = { alreadyExist: true };
+            res.send(result);
+          } else {
+            const updateDoc = {
+              $set: {
+                displayName: userInfo.displayName,
+              },
+            };
+            const result = await userCollection.updateOne(
+              alreadyExist,
+              updateDoc
+            );
+            res.send(result);
+          }
+        }
       }
     });
 
