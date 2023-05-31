@@ -10,6 +10,31 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// !----------------- JWT TOKEN VERIFY ------------------!
+const jwtVerify = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res
+      .status(401)
+      .send({ error: true, message: "Unauthorized Access" });
+  }
+
+  const token = authorization.split(" ")[1];
+  if (!token) {
+    return res
+      .status(401)
+      .send({ error: true, message: "Unauthorized Access" });
+  }
+
+  jwt.verify(token, process.env.TOKEN_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.send(err);
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rxhaoz0.mongodb.net/?retryWrites=true&w=majority`;
 
