@@ -52,19 +52,12 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
-    /* ----------------------- COLLECTION -------------------- */
-    const menuCollection = client
-      .db("bistro-boss-restaurant")
-      .collection("foodsMenu");
-    const reviewCollection = client
-      .db("bistro-boss-restaurant")
-      .collection("reviews");
-    const cartCollection = client
-      .db("bistro-boss-restaurant")
-      .collection("carts");
-    const userCollection = client
-      .db("bistro-boss-restaurant")
-      .collection("users");
+    //! /*----------------------- DB COLLECTION -------------------- */
+    const DB = client.db("bistro-boss-restaurant");
+    const menuCollection = DB.collection("foodsMenu");
+    const reviewCollection = DB.collection("reviews");
+    const cartCollection = DB.collection("carts");
+    const userCollection = DB.collection("users");
 
     /* ---------------------------------------------------------------
       !------------------- GENERATE TOKEN ---------------------------- */
@@ -76,6 +69,39 @@ async function run() {
       });
       res.send({ token });
     });
+
+    /* ------------------------------------------------------------------
+    !------------------------- CREATE USER --------------------------- */
+    app.post("/users", async (req, res) => {
+      const userInfo = req.body;
+      if (userInfo.email && userInfo.displayName) {
+        const query = { email: userInfo.email };
+        const alreadyExist = await userCollection.findOne(query);
+        if (!alreadyExist) {
+          const result = await userCollection.insertOne(userInfo);
+          res.send(result);
+        } else {
+          const isSameName = alreadyExist.displayName === userInfo.displayName;
+          if (isSameName) {
+            const result = { alreadyExist: true };
+            res.send(result);
+          } else {
+            const updateDoc = {
+              $set: {
+                displayName: userInfo.displayName,
+              },
+            };
+            const result = await userCollection.updateOne(
+              alreadyExist,
+              updateDoc
+            );
+            res.send(result);
+          }
+        }
+      }
+    });
+
+    //! /* -------------------------------- PUBLIC ROUTE START --------------------------------- */
 
     /* ----------------------------------------------------------
       !-------------------------- GET ALL MENUS ------------------- */
@@ -90,6 +116,8 @@ async function run() {
       const reviews = await reviewCollection.find().toArray();
       res.send(reviews);
     });
+
+    //! /* -------------------------------- USER ROUTE START --------------------------------- */
 
     /* ----------------------------------------------------------
       !-------------------------- SAVE TO CART ------------------- */
@@ -138,35 +166,11 @@ async function run() {
       res.send(result);
     });
 
-    /* ------------------------------------------------------------------
-    !------------------------- CREATE USER --------------------------- */
-    app.post("/users", async (req, res) => {
-      const userInfo = req.body;
-      if (userInfo.email && userInfo.displayName) {
-        const query = { email: userInfo.email };
-        const alreadyExist = await userCollection.findOne(query);
-        if (!alreadyExist) {
-          const result = await userCollection.insertOne(userInfo);
-          res.send(result);
-        } else {
-          const isSameName = alreadyExist.displayName === userInfo.displayName;
-          if (isSameName) {
-            const result = { alreadyExist: true };
-            res.send(result);
-          } else {
-            const updateDoc = {
-              $set: {
-                displayName: userInfo.displayName,
-              },
-            };
-            const result = await userCollection.updateOne(
-              alreadyExist,
-              updateDoc
-            );
-            res.send(result);
-          }
-        }
-      }
+    // !/*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
+    /* ------------------------- GET ALL USER ---------------- */
+    app.get("/users", async (req, res) => {
+      const users = await userCollection.find().toArray();
+      res.send(users);
     });
 
     // Send a ping to confirm a successful connection
