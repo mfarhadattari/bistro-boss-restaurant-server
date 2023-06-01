@@ -59,17 +59,26 @@ async function run() {
     const cartCollection = DB.collection("carts");
     const userCollection = DB.collection("users");
 
-    // !/* -------------------------- Admin Verify ----------------------- */
+    // !/* -------------------------- ADMIN VERIFY MIDDLEWARE ----------------------- */
     const adminVerify = async (req, res, next) => {
       const email = req.decoded.email;
+
+      if (email !== req.query.email) {
+        return res
+          .status(403)
+          .send({ error: true, message: "Access Forbidden" });
+      }
       const query = { email: email };
       const result = await userCollection.findOne(query);
       if (result.role !== "admin") {
-        return res.status(403).send("Access Forbidden");
+        return res
+          .status(403)
+          .send({ error: true, message: "Access Forbidden" });
       }
       next();
     };
 
+    /* --------------------------------------------------- Security APIs ------------------------------------------- */
     /* ---------------------------------------------------------------
       !------------------- GENERATE TOKEN ---------------------------- */
     app.post("/jwt", (req, res) => {
@@ -80,6 +89,40 @@ async function run() {
       });
       res.send({ token });
     });
+
+    // ! ---------------------- Check Admin ---------------------
+    app.get("/user/admin", jwtVerify, async (req, res) => {
+      const email = req.query.email;
+      if (email !== req.decoded.email) {
+        return res
+          .status(403)
+          .send({ error: true, message: "Access Forbidden" });
+      }
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      if (result?.role !== "admin") {
+        return res.send({ isAdmin: false });
+      }
+      res.send({ isAdmin: true });
+    });
+
+    /* ------------------------------------- PUBLIC ROUTE START ------------------------------------------------- */
+
+    /* ----------------------------------------------------------
+      !-------------------------- GET ALL MENUS ------------------- */
+    app.get("/menu", async (req, res) => {
+      const menu = await menuCollection.find().toArray();
+      res.send(menu);
+    });
+
+    /* ----------------------------------------------------------
+      !-------------------------- GET ALL REVIEWS ------------------- */
+    app.get("/reviews", async (req, res) => {
+      const reviews = await reviewCollection.find().toArray();
+      res.send(reviews);
+    });
+
+    /* -------------------------------------------- USER ROUTE START ----------------------------------------------- */
 
     /* ------------------------------------------------------------------
     !------------------------- CREATE USER --------------------------- */
@@ -111,24 +154,6 @@ async function run() {
         }
       }
     });
-
-    /* ------------------------------------- PUBLIC ROUTE START ------------------------------------------------- */
-
-    /* ----------------------------------------------------------
-      !-------------------------- GET ALL MENUS ------------------- */
-    app.get("/menu", async (req, res) => {
-      const menu = await menuCollection.find().toArray();
-      res.send(menu);
-    });
-
-    /* ----------------------------------------------------------
-      !-------------------------- GET ALL REVIEWS ------------------- */
-    app.get("/reviews", async (req, res) => {
-      const reviews = await reviewCollection.find().toArray();
-      res.send(reviews);
-    });
-
-    /* -------------------------------------------- USER ROUTE START ----------------------------------------------- */
 
     /* ----------------------------------------------------------
       !-------------------------- SAVE TO CART ------------------- */
@@ -179,13 +204,13 @@ async function run() {
 
     /*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
     // !/* ------------------------- GET ALL USER ---------------- */
-    app.get("/users", jwtVerify, adminVerify, async (req, res) => {
+    app.get("/all-users", jwtVerify, adminVerify, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
 
     // ! -------------------- MAKE USER ADMIN --------------------- !
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/admin/:id", jwtVerify, adminVerify, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const updateDoc = {
