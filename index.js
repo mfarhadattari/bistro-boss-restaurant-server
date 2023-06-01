@@ -28,7 +28,7 @@ const jwtVerify = (req, res, next) => {
 
   jwt.verify(token, process.env.TOKEN_SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res.send({ error: true, ...err });
+      return res.status(401).send({ error: true, ...err });
     }
     req.decoded = decoded;
     next();
@@ -58,6 +58,17 @@ async function run() {
     const reviewCollection = DB.collection("reviews");
     const cartCollection = DB.collection("carts");
     const userCollection = DB.collection("users");
+
+    // !/* -------------------------- Admin Verify ----------------------- */
+    const adminVerify = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      if (result.role !== "admin") {
+        return res.status(403).send("Access Forbidden");
+      }
+      next();
+    };
 
     /* ---------------------------------------------------------------
       !------------------- GENERATE TOKEN ---------------------------- */
@@ -168,7 +179,7 @@ async function run() {
 
     /*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
     // !/* ------------------------- GET ALL USER ---------------- */
-    app.get("/users", async (req, res) => {
+    app.get("/users", jwtVerify, adminVerify, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
