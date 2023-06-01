@@ -101,7 +101,7 @@ async function run() {
       }
     });
 
-    //! /* -------------------------------- PUBLIC ROUTE START --------------------------------- */
+    /* ------------------------------------- PUBLIC ROUTE START ------------------------------------------------- */
 
     /* ----------------------------------------------------------
       !-------------------------- GET ALL MENUS ------------------- */
@@ -117,7 +117,7 @@ async function run() {
       res.send(reviews);
     });
 
-    //! /* -------------------------------- USER ROUTE START --------------------------------- */
+    /* -------------------------------------------- USER ROUTE START ----------------------------------------------- */
 
     /* ----------------------------------------------------------
       !-------------------------- SAVE TO CART ------------------- */
@@ -166,11 +166,24 @@ async function run() {
       res.send(result);
     });
 
-    // !/*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
-    /* ------------------------- GET ALL USER ---------------- */
+    /*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
+    // !/* ------------------------- GET ALL USER ---------------- */
     app.get("/users", async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
+    });
+
+    // ! -------------------- MAKE USER ADMIN --------------------- !
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
