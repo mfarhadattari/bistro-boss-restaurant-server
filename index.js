@@ -59,6 +59,7 @@ async function run() {
     const reviewCollection = DB.collection("reviews");
     const cartCollection = DB.collection("carts");
     const userCollection = DB.collection("users");
+    const paymentCollection = DB.collection("payments");
 
     // !/* -------------------------- ADMIN VERIFY MIDDLEWARE ----------------------- */
     const adminVerify = async (req, res, next) => {
@@ -204,7 +205,7 @@ async function run() {
     });
 
     // ! Payment Intent
-    app.post("/create-payment-intent", async (req, res) => {
+    app.post("/create-payment-intent", jwtVerify, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
 
@@ -215,6 +216,17 @@ async function run() {
       });
 
       res.send({ clientSecret: paymentIntent.client_secret });
+    });
+
+    // !Payment Confirmation
+    app.post("/payment-confirmation", jwtVerify, async (req, res) => {
+      const paymentInfo = req.body;
+      const paymentConfirmation = await paymentCollection.insertOne(
+        paymentInfo
+      );
+
+      // TODO Delete order item from Carts
+      res.send({ paymentConfirmation });
     });
 
     /*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
