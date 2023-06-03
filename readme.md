@@ -21,7 +21,6 @@
 
 - Admin API:
 
-  - MAKE ADMIN: http://localhost:5000/users/admin {user id as param}
+  - MAKE ADMIN: http://localhost:5000/users/admin {user id as pram}
   - ALL USER: http://localhost:5000/all-users {admin email in query and admin token in header}
   - ADD ITEM: http://localhost:5000/add-item {admin email in query and admin token in header and data in body}
-  - DELETE ITEM: http://localhost:5000/delete-item {item id as param,admin email in query and admin token in header and data in body}
