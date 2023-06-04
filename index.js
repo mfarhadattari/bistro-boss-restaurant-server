@@ -224,9 +224,13 @@ async function run() {
       const paymentConfirmation = await paymentCollection.insertOne(
         paymentInfo
       );
-
-      // TODO Delete order item from Carts
-      res.send({ paymentConfirmation });
+      const filter = {
+        _id: {
+          $in: paymentInfo.cartInfo.map((item) => new ObjectId(item._id)),
+        },
+      };
+      const deleteConfirmation = await cartCollection.deleteMany(filter);
+      res.send({ paymentConfirmation, deleteConfirmation });
     });
 
     /*------------------------------------------------- ADMIN ROUTE ----------------------------------------  */
