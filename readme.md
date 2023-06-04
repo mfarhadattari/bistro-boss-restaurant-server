@@ -1,26 +1,29 @@
 # Bistro Boss Restaurant
 
+HOME: https://mfarhad-bistro-boss-restaurant.vercel.app/
+
 # All API:
 
 - Public API:
 
-  - MENUS: http://localhost:5000/menu
-  - REVIEWS: http://localhost:5000/reviews
+  - MENUS: https://mfarhad-bistro-boss-restaurant.vercel.app/menu
+  - REVIEWS: https://mfarhad-bistro-boss-restaurant.vercel.app/reviews
 
 - Security API:
 
-  - GENERATE TOKEN: http://localhost:5000/jwt {user email in body}
-  - CHECK ADMIN: http://localhost:5000/user/admin {user email in query and user token in header}
+  - GENERATE TOKEN: https://mfarhad-bistro-boss-restaurant.vercel.app/jwt {user email in body}
+  - CHECK ADMIN: https://mfarhad-bistro-boss-restaurant.vercel.app/user/admin {user email in query and user token in header}
 
 - User API:
 
-  - CREATE USER: http://localhost:5000/users {user info in body}
-  - SAVE TO CART: http://localhost:5000/carts {cart items info in body with user email}
-  - DELETE FROM CART: http://localhost:5000/carts {item id by params}
-  - USER CART: http://localhost:5000/carts {take user email in query and jwt token in header}
+  - CREATE USER: https://mfarhad-bistro-boss-restaurant.vercel.app/users {user info in body}
+  - SAVE TO CART: https://mfarhad-bistro-boss-restaurant.vercel.app/carts {cart items info in body with user email}
+  - DELETE FROM CART: https://mfarhad-bistro-boss-restaurant.vercel.app/carts {item id by params}
+  - USER CART: https://mfarhad-bistro-boss-restaurant.vercel.app/carts {take user email in query and jwt token in header}
 
 - Admin API:
 
-  - MAKE ADMIN: http://localhost:5000/users/admin {user id as pram}
-  - ALL USER: http://localhost:5000/all-users {admin email in query and admin token in header}
-  - ADD ITEM: http://localhost:5000/add-item {admin email in query and admin token in header and data in body}
+  - MAKE ADMIN: https://mfarhad-bistro-boss-restaurant.vercel.app/users/admin {user id as pram}
+  - ALL USER: https://mfarhad-bistro-boss-restaurant.vercel.app/all-users {admin email in query and admin token in header}
+  - ADD ITEM: https://mfarhad-bistro-boss-restaurant.vercel.app/add-item {admin email in query and admin token in header and data in body}
+  - REMOVE ITEM: https://mfarhad-bistro-boss-restaurant.vercel.app/delete-item {admin email in query and admin token in header and id in param}
