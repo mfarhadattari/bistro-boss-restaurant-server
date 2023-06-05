@@ -41,4 +41,11 @@ router.delete("/delete-item/:id", jwtVerify, adminVerify, async (req, res) => {
   res.send(result);
 });
 
+// ! -------------------------------- PAYMENT DATA ---------------------------- ! //
+router.get("/payment-info", jwtVerify, adminVerify, async (req, res) => {
+  const paymentCollection = req.paymentCollection;
+  const result = await paymentCollection.find().toArray();
+  res.send(result);
+});
+
 module.exports = router;
