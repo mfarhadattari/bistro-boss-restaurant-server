@@ -45,8 +45,8 @@ async function run() {
 
     //! Route From Other File Here
     app.use("/", publicRoutes);
-    app.use("/", userRoute);
-    app.use("/", adminRoute);
+    app.use("/user", userRoute);
+    app.use("/admin", adminRoute);
     app.use("/", otherRoute);
 
     // Send a ping to confirm a successful connection

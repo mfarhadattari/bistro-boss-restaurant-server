@@ -11,7 +11,7 @@ router.get("/all-users", jwtVerify, adminVerify, async (req, res) => {
 });
 
 // ! -------------------- MAKE USER ADMIN --------------------- ! //
-router.patch("/users/admin/:id", jwtVerify, adminVerify, async (req, res) => {
+router.patch("/make-admin/:id", jwtVerify, adminVerify, async (req, res) => {
   const userCollection = req.userCollection;
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };

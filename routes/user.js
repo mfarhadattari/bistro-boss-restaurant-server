@@ -5,37 +5,26 @@ const router = express.Router();
 require("dotenv").config();
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
+// !---------------------- GET CARTS OF AN USER ------------------- ! //
+router.get("/carts", jwtVerify, async (req, res) => {
+  const cartCollection = req.cartCollection;
+  const email = req.query.email;
 
-// ! ---------------- CREATE USER -------------------  ! //
-router.post("/users", async (req, res) => {
-  const userCollection = req.userCollection;
-  const userInfo = req.body;
-  if (userInfo.email && userInfo.displayName) {
-    const query = { email: userInfo.email };
-    const alreadyExist = await userCollection.findOne(query);
-    if (!alreadyExist) {
-      const result = await userCollection.insertOne(userInfo);
-      res.send(result);
-    } else {
-      const isSameName = alreadyExist.displayName === userInfo.displayName;
-      if (isSameName) {
-        const result = { alreadyExist: true };
-        res.send(result);
-      } else {
-        const updateDoc = {
-          $set: {
-            displayName: userInfo.displayName,
-          },
-        };
-        const result = await userCollection.updateOne(alreadyExist, updateDoc);
-        res.send(result);
-      }
-    }
+  if (!email) {
+    res.send([]);
   }
+
+  if (email !== req.decoded.email) {
+    return res.status(403).send({ error: true, message: "Access Forbidden" });
+  }
+
+  const query = { email: email };
+  const result = await cartCollection.find(query).toArray();
+  res.send(result);
 });
 
 // ! ---------------- ADD TO CART -------------------  ! //
-router.post("/carts", async (req, res) => {
+router.post("/add-to-carts", async (req, res) => {
   const cartItem = req.body;
   const cartCollection = req.cartCollection;
   const query = { foodID: cartItem.foodID, email: cartItem.email };
@@ -57,27 +46,11 @@ router.post("/carts", async (req, res) => {
 });
 
 // !---------------------- DELETE A ITEM FROM CART -------------------! //
-router.delete("/carts/:id", async (req, res) => {
+router.delete("/delete-from-carts/:id", async (req, res) => {
   const cartCollection = req.cartCollection;
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await cartCollection.deleteOne(query);
-  res.send(result);
-});
-
-// !---------------------- GET CARTS OF AN USER ------------------- ! //
-router.get("/carts", jwtVerify, async (req, res) => {
-  const cartCollection = req.cartCollection;
-  const email = req.query.email;
-  if (!email) {
-    res.send([]);
-  }
-  const decoded = req.decoded;
-  if (!email === decoded.email) {
-    res.status(403).send({ error: true, message: "Forbidden Access" });
-  }
-  const query = { email: email };
-  const result = await cartCollection.find(query).toArray();
   res.send(result);
 });
 

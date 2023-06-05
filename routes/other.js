@@ -16,7 +16,7 @@ router.post("/jwt", (req, res) => {
 });
 
 // ! ---------------------- CHECK ADMIN --------------------- ! //
-router.get("/user/admin", jwtVerify, async (req, res) => {
+router.get("/check-admin", jwtVerify, async (req, res) => {
   const userCollection = req.userCollection;
   const email = req.query.email;
   if (email !== req.decoded.email) {
